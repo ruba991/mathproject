@@ -1,0 +1,423 @@
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المتتابعات بوصفها دوال</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#050814;--navy:#080f28;--glass:#0d1535;--glass2:#121c3e;--glass3:#172247;
+  --indigo:#818cf8;--spark:#fbbf24;--neon:#34d399;--coral:#f87171;--sky:#38bdf8;
+  --text:#e0e7ff;--dim:#475569;--bi:rgba(129,140,248,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}html{font-size:16px}
+body{font-family:'Cairo','Tajawal',sans-serif;background:var(--night);color:var(--text);min-height:100vh;direction:rtl;overflow-x:hidden;}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.nebula{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 15% 20%,rgba(99,102,241,.13) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 75%,rgba(251,191,36,.08) 0%,transparent 60%);}
+.wrap{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:14px 14px 52px;}
+.hud{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.pill{display:flex;align-items:center;gap:5px;background:rgba(13,21,53,.85);border:1px solid rgba(129,140,248,.2);border-radius:99px;padding:6px 13px;font-size:.77rem;font-weight:700;backdrop-filter:blur(8px);}
+.pv{color:var(--spark);font-weight:900;font-size:.88rem;}
+.sp1{flex:1}
+.lp-wrap{margin-bottom:14px;}
+.lp-rail{height:4px;background:rgba(129,140,248,.12);border-radius:99px;overflow:hidden;}
+.lp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--indigo),var(--sky),var(--spark));transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 10px var(--indigo);}
+.lp-dots{display:flex;justify-content:space-between;margin-top:8px;}
+.lpdot{width:28px;height:28px;border-radius:50%;background:var(--glass);border:2px solid rgba(129,140,248,.2);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:var(--dim);transition:all .35s;}
+.lpdot.act{background:var(--indigo);border-color:var(--spark);color:#fff;box-shadow:0 0 12px var(--indigo);}
+.lpdot.fin{background:var(--neon);border-color:var(--neon);color:var(--night);}
+.scr{display:none;}
+.scr.on{display:block;animation:lift .35s ease both;}
+@keyframes lift{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.card{background:rgba(13,21,53,.8);border:1px solid rgba(129,140,248,.18);border-radius:22px;padding:26px 22px 22px;margin-bottom:14px;position:relative;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);}
+.card::before{content:'';position:absolute;top:-100px;left:-100px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,.08),transparent 65%);pointer-events:none;}
+.card-spark::before{background:radial-gradient(circle,rgba(251,191,36,.09),transparent 65%);}
+.card-neon::before{background:radial-gradient(circle,rgba(52,211,153,.08),transparent 65%);}
+.rw-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;}
+.rw-face{flex-shrink:0;width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:1.9rem;box-shadow:0 0 20px rgba(99,102,241,.5);animation:fg 3s ease-in-out infinite;}
+@keyframes fg{0%,100%{box-shadow:0 0 20px rgba(99,102,241,.5)}50%{box-shadow:0 0 30px rgba(99,102,241,.8),0 0 50px rgba(251,191,36,.3)}}
+.rw-bubble{background:rgba(18,28,62,.9);border:1px solid rgba(251,191,36,.2);border-radius:0 18px 18px 18px;padding:14px 17px;flex:1;font-size:.95rem;line-height:1.85;}
+.rw-name{font-size:.66rem;font-weight:900;color:var(--spark);margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px;}
+.lvbdg{display:inline-flex;align-items:center;gap:6px;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.3);border-radius:99px;padding:5px 14px;font-size:.7rem;font-weight:800;color:var(--indigo);margin-bottom:14px;letter-spacing:.3px;}
+.spips{display:flex;gap:6px;justify-content:center;margin-bottom:14px;}
+.spdot{width:9px;height:9px;border-radius:50%;background:var(--glass2);border:2px solid rgba(129,140,248,.2);transition:all .3s;}
+.spdot.fin{background:var(--neon);border-color:var(--neon);}
+.spdot.act{background:var(--spark);border-color:var(--spark);box-shadow:0 0 6px var(--spark);}
+.timer-w{margin-bottom:14px;}
+.timer-rail{height:6px;background:rgba(129,140,248,.1);border-radius:99px;overflow:hidden;}
+.timer-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--neon),var(--sky),var(--spark));transition:width 1s linear;box-shadow:0 0 8px var(--neon);}
+.timer-bar.hot{background:linear-gradient(90deg,var(--coral),var(--spark));box-shadow:0 0 8px var(--coral);}
+.timer-lbl{font-size:.74rem;color:var(--dim);margin-top:3px;text-align:left;}
+.seq-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:15px 0;}
+.tile{width:54px;height:54px;border-radius:12px;background:rgba(23,34,71,.9);border:2px solid rgba(56,189,248,.25);display:flex;align-items:center;justify-content:center;font-family:'Tajawal',monospace;font-size:1.1rem;font-weight:800;color:var(--sky);animation:tIn .3s ease both;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.tile:nth-child(1){animation-delay:.04s}.tile:nth-child(3){animation-delay:.08s}.tile:nth-child(5){animation-delay:.12s}.tile:nth-child(7){animation-delay:.16s}.tile:nth-child(9){animation-delay:.2s}
+@keyframes tIn{from{opacity:0;transform:scale(.55)rotate(-10deg)}to{opacity:1;transform:scale(1)rotate(0)}}
+.tile.blank{background:rgba(251,191,36,.08);border-color:var(--spark);color:var(--spark);font-size:1.5rem;box-shadow:0 0 12px rgba(251,191,36,.2);}
+.tsep{color:var(--dim);font-size:1rem;font-weight:900;align-self:center;}
+.tdots{color:var(--dim);font-size:1.2rem;font-weight:900;align-self:center;}
+.opts{display:grid;gap:9px;margin-top:13px;}
+.opts.g2{grid-template-columns:1fr 1fr;}
+.opts.g3{grid-template-columns:1fr 1fr 1fr;}
+.opt{background:rgba(18,28,62,.8);border:2px solid rgba(129,140,248,.15);border-radius:13px;padding:13px 15px;font-family:'Cairo',sans-serif;font-size:.87rem;font-weight:700;color:var(--text);cursor:pointer;text-align:right;transition:all .2s;display:flex;align-items:center;gap:9px;backdrop-filter:blur(6px);}
+.opt:hover:not(:disabled){border-color:var(--spark);background:rgba(251,191,36,.07);transform:translateX(-3px);}
+.opt.yes{border-color:var(--neon)!important;background:rgba(52,211,153,.1)!important;color:var(--neon)!important;box-shadow:0 0 12px rgba(52,211,153,.2)!important;}
+.opt.no{border-color:var(--coral)!important;background:rgba(248,113,113,.07)!important;color:#fca5a5!important;}
+.opt:disabled{cursor:default;}
+.okey{width:27px;height:27px;border-radius:7px;background:rgba(129,140,248,.12);border:1px solid rgba(129,140,248,.25);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:900;flex-shrink:0;color:var(--indigo);}
+.fb{border-radius:13px;padding:13px 16px;margin-top:12px;font-size:.86rem;line-height:1.78;display:none;}
+.fb.on{display:block;animation:lift .25s ease;}
+.fb.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--neon);}
+.fb.err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:#fca5a5;}
+.qtxt{font-size:.97rem;font-weight:700;line-height:1.85;margin-bottom:8px;}
+.qlbl{font-size:.7rem;font-weight:900;color:var(--spark);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 7px;}
+.rfseq{font-family:'Tajawal',monospace;font-size:1.6rem;font-weight:800;color:var(--sky);text-align:center;padding:22px 14px;background:rgba(18,28,62,.8);border-radius:16px;border:2px solid rgba(56,189,248,.2);min-height:72px;display:flex;align-items:center;justify-content:center;letter-spacing:1px;animation:tIn .28s ease;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.rf-info{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim);margin-bottom:10px;}
+.rf-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:13px;}
+.rfb{padding:14px 5px;border-radius:13px;font-family:'Cairo',sans-serif;font-size:.86rem;font-weight:800;cursor:pointer;border:2px solid;text-align:center;transition:all .2s;backdrop-filter:blur(6px);}
+.rfb-c{background:rgba(56,189,248,.09);border-color:var(--sky);color:var(--sky);}
+.rfb-c:hover{background:rgba(56,189,248,.2);transform:translateY(-3px);}
+.rfb-h{background:rgba(251,191,36,.09);border-color:var(--spark);color:var(--spark);}
+.rfb-h:hover{background:rgba(251,191,36,.2);transform:translateY(-3px);}
+.rfb-n{background:rgba(129,140,248,.09);border-color:var(--indigo);color:var(--indigo);}
+.rfb-n:hover{background:rgba(129,140,248,.2);transform:translateY(-3px);}
+.rfb.flash{transform:scale(1.08);}
+.rfb.dim{opacity:.35;}
+.ninput{background:rgba(23,34,71,.9);border:2px solid var(--spark);border-radius:11px;padding:10px 12px;font-family:'Tajawal',monospace;font-size:1.1rem;font-weight:800;color:var(--spark);width:80px;text-align:center;outline:none;transition:border-color .2s;box-shadow:0 0 12px rgba(251,191,36,.15);}
+.ninput:focus{border-color:var(--sky);}
+.inrow{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+.graphbox{background:rgba(13,21,53,.8);border:1px solid rgba(129,140,248,.2);border-radius:14px;padding:12px;margin:10px 0;backdrop-filter:blur(8px);}
+canvas{display:block;margin:0 auto;}
+.peek-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(18,28,62,.8);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:6px 13px;font-size:.74rem;font-weight:800;cursor:pointer;color:var(--sky);transition:all .2s;margin-bottom:9px;font-family:'Cairo',sans-serif;backdrop-filter:blur(6px);}
+.peek-btn:hover{border-color:var(--sky);}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:12px;font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;border:none;transition:all .22s;}
+.btn-main{background:linear-gradient(135deg,#6366f1,#fbbf24);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3);}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.4);}
+.btn-ghost{background:rgba(18,28,62,.8);color:var(--text);border:1px solid rgba(129,140,248,.2);backdrop-filter:blur(6px);}
+.btn-ghost:hover{border-color:var(--spark);}
+.btn-neon{background:linear-gradient(135deg,#065f46,#34d399);color:var(--night);}
+.btn-sm{padding:8px 15px;font-size:.79rem;}
+.nav-row{display:flex;gap:9px;justify-content:space-between;margin-top:14px;flex-wrap:wrap;}
+.trophy{font-size:5.5rem;text-align:center;animation:trin .9s cubic-bezier(.34,1.56,.64,1);}
+@keyframes trin{from{transform:scale(0)rotate(-180deg)}to{transform:scale(1)rotate(0)}}
+.escore{font-size:3.2rem;font-weight:900;color:var(--spark);text-align:center;}
+.esub{color:var(--dim);text-align:center;margin-bottom:14px;}
+.strow{display:flex;justify-content:center;gap:9px;margin:10px 0;}
+.estr{font-size:2.2rem;}
+.estr.glow{animation:sp .35s ease both;}
+@keyframes sp{0%{transform:scale(0)}65%{transform:scale(1.45)}100%{transform:scale(1)}}
+.bdgrow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.bdgcard{background:rgba(18,28,62,.8);border:1px solid rgba(129,140,248,.2);border-radius:11px;padding:10px 12px;text-align:center;min-width:82px;}
+.bdgi{font-size:1.5rem;}.bdgl{font-size:.65rem;color:var(--dim);margin-top:2px;font-weight:700;}
+.lbrow{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;margin-bottom:5px;background:rgba(18,28,62,.7);}
+.lbrow.me{border:1px solid var(--spark);background:rgba(251,191,36,.05);}
+.lbrnk{font-weight:900;width:24px;}.lbnm{flex:1;font-weight:700;}.lbpt{font-weight:900;color:var(--spark);}
+@media(max-width:560px){
+  .rf-btns,.opts.g3{grid-template-columns:1fr;}
+  .opts.g2{grid-template-columns:1fr;}
+  .tile{width:46px;height:46px;font-size:.9rem;}
+  .card{padding:18px 13px;}
+}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="nebula"></div>
+<div class="wrap">
+  <div class="hud">
+    <div class="pill">⭐ <span class="pv" id="hPts">0</span></div>
+    <div class="pill">🔥 <span class="pv" id="hStr">0</span></div>
+    <div class="pill">✅ <span class="pv" id="hCor">0</span><span style="color:var(--dim)">/25</span></div>
+    <div class="sp1"></div>
+    <button class="btn btn-ghost btn-sm" id="homeBtn" style="display:none" onclick="goHome()">🏠</button>
+  </div>
+  <div class="lp-wrap">
+    <div class="lp-rail"><div class="lp-fill" id="lpFill" style="width:0%"></div></div>
+    <div class="lp-dots" id="lpDots"></div>
+  </div>
+
+
+<div class="scr on" id="scrHome">
+  <div class="card" style="text-align:center;padding:34px 22px">
+      <div class="rw-row" style="text-align:right;margin-bottom:24px">
+        <div class="rw-face">👩‍🏫</div>
+        <div class="rw-bubble">
+          <!-- <div class="rw-name">روان</div> -->
+          ⚡مع روان وميار ووسن..هنا يبدأ التحدي!
+        </div>
+      </div>
+      <div style="font-size:1.55rem;font-weight:900;color:var(--spark);margin-bottom:6px">مشروع الرياضيات</div>
+      <div style="color: #d9d7d7;font: size 0.1em;rem;margin-bottom:22px"> أ. تهاني التعزي </div>
+      <!-- <button class="btn btn-main" onclick="startGame()" style="font-size:.95rem;padding:13px 30px">🚀 ابدأ اللعبة</button> -->
+    
+      <div style="font-size:1.55rem;font-weight:900;color:var(--spark);margin-bottom:20px">
+      اختر المرحلة
+    </div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px">
+
+      <button class="btn btn-main" onclick="startFrom(1)">المستوى 1</button>
+      <button class="btn btn-main" onclick="startFrom(2)">المستوى 2</button>
+      <button class="btn btn-main" onclick="startFrom(3)">المستوى 3</button>
+      <button class="btn btn-main" onclick="startFrom(4)">المستوى 4</button>
+      <button class="btn btn-main" onclick="startFrom(5)">المستوى 5</button>
+
+    </div>
+    
+
+  </div>
+  </div>
+
+
+    
+
+  <!-- المستوى 1 -->
+  <div class="scr" id="scrL1">
+    <div class="card card-spark">
+      <div class="lvbdg">📖 المستوى الأول · 5 أسئلة</div>
+      <div class="spips" id="pL1"></div>
+      <div class="timer-w"><div class="timer-rail"><div class="timer-bar" id="tB1" style="width:100%"></div></div><div class="timer-lbl" id="tL1">⏱ 20</div></div>
+      <div id="bL1"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goHome()">🏠</button>
+      <button class="btn btn-main" id="nL1" style="display:none" onclick="l1Next()">التالي ←</button>
+    </div>
+  </div>
+
+  <!-- المستوى 2 -->
+  <div class="scr" id="scrL2">
+    <div class="card">
+      <div class="lvbdg">⚡ المستوى الثاني · 5 تصنيف سريع</div>
+      <div class="timer-w"><div class="timer-rail"><div class="timer-bar" id="tB2" style="width:100%"></div></div><div class="timer-lbl" id="tL2">⏱ 20</div></div>
+      <div class="rf-info"><span id="rfCnt">1 / 5</span><span>تتالي: <strong style="color:var(--spark)" id="rfSt">0</strong> 🔥</span></div>
+      <div class="rfseq" id="rfSeq">...</div>
+      <div class="rf-btns">
+        <button class="rfb rfb-c" onclick="rfAns('ح')">➕ حسابية</button>
+        <button class="rfb rfb-h" onclick="rfAns('ه')">✖️ هندسية</button>
+        <button class="rfb rfb-n" onclick="rfAns('غ')">❓ غير ذلك</button>
+      </div>
+      <div class="fb" id="rfFb"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goHome()">🏠</button>
+      <button class="btn btn-main" id="nL2" style="display:none" onclick="goLv(3)">المستوى التالي ←</button>
+    </div>
+  </div>
+
+  <!-- المستوى 3 -->
+  <div class="scr" id="scrL3">
+    <div class="card card-spark">
+      <div class="lvbdg">💡 المستوى الثالث · 5 تصنيف وتبرير</div>
+      <div class="spips" id="pL3"></div>
+      <div class="timer-w"><div class="timer-rail"><div class="timer-bar" id="tB3" style="width:100%"></div></div><div class="timer-lbl" id="tL3">⏱ 20</div></div>
+      <div id="bL3"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goHome()">🏠</button>
+      <button class="btn btn-main" id="nL3" style="display:none" onclick="l3Next()">التالي ←</button>
+    </div>
+  </div>
+
+  <!-- المستوى 4 -->
+  <div class="scr" id="scrL4">
+    <div class="card card-neon">
+      <div class="lvbdg">🕵️ المستوى الرابع · 5 أسئلة</div>
+      <div class="spips" id="pL4"></div>
+      <div class="timer-w"><div class="timer-rail"><div class="timer-bar" id="tB4" style="width:100%"></div></div><div class="timer-lbl" id="tL4">⏱ 20</div></div>
+      <div id="bL4"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goHome()">🏠</button>
+      <button class="btn btn-main" id="nL4" style="display:none" onclick="l4Next()">التالي ←</button>
+    </div>
+  </div>
+
+  <!-- المستوى 5 -->
+  <div class="scr" id="scrL5">
+    <div class="card card-spark">
+      <div class="lvbdg">🏆 المستوى الخامس · التحدي الأخير</div>
+      <div class="spips" id="pL5"></div>
+      <div class="timer-w"><div class="timer-rail"><div class="timer-bar" id="tB5" style="width:100%"></div></div><div class="timer-lbl" id="tL5">⏱ 20</div></div>
+      <div id="bL5"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goHome()">🏠</button>
+      <button class="btn btn-main" id="nL5" style="display:none" onclick="l5Next()">التالي ←</button>
+    </div>
+  </div>
+
+  <!-- نهاية اللعبة -->
+  <div class="scr" id="scrEnd">
+    <div class="card" style="text-align:center">
+      <div class="trophy" id="eTrphy">🏆</div>
+      <div style="font-size:1.3rem;font-weight:900;color:var(--spark);margin:10px 0" id="eTitle"></div>
+      <div class="strow" id="eStars"></div>
+      <div class="escore" id="eScore">0</div>
+      <div class="esub">نقطة</div>
+      <div style="display:flex;gap:9px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+        <button class="btn btn-main" onclick="startGame()">🔄 العب مجدداً</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ STARFIELD ═══
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let W,H,st=[];
+  function rsz(){W=c.width=innerWidth;H=c.height=innerHeight;st=Array.from({length:120},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,s:Math.random()*.003+.001,t:Math.random()*Math.PI*2}));}
+  rsz();addEventListener('resize',rsz);
+  function fr(){ctx.clearRect(0,0,W,H);st.forEach(s=>{s.t+=s.s;const a=.3+.5*Math.abs(Math.sin(s.t));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,210,255,${a})`;ctx.fill();});requestAnimationFrame(fr);}
+  fr();
+})();
+
+// ═══ STATE ═══
+let G={pts:0,cor:0,str:0,lv:0,tmr:null,t:0};
+
+// ═══ المستوى 1 — 5 أسئلة ═══
+// [0] تعريف المتتابعة [1] تعريف المجال [2-4] تصنيف
+const D1=[
+  {q:'أيٌّ من التعريفات التالية يصف المتتابعة بشكل صحيح؟',opts:['مجموعة أعداد عشوائية بدون ترتيب','المتتابعة هي مجموعة من الأعداد مرتبة في نمط محدد أو ترتيب معين','معادلة جبرية تحتوي على متغيرات','قائمة من الأعداد الزوجية فقط'],a:1,ok:'✅ صحيح! المتتابعة هي مجموعة من الأعداد مرتبة في نمط محدد أو ترتيب معين.',no:'❌ المتتابعة هي مجموعة من الأعداد مرتبة في نمط محدد أو ترتيب معين.'},
+  {q:'المجال في المتتابعة بوصفها دالةً هو:',opts:['الأعداد الحقيقية جميعها','الأعداد الزوجية فقط','مجموعة الأعداد الطبيعية جميعها','الأعداد السالبة فقط'],a:2,ok:'✅ صحيح! المجال هو مجموعة الأعداد الطبيعية جميعها: {1، 2، 3، ...}.',no:'❌ المجال هو مجموعة الأعداد الطبيعية جميعها: {1، 2، 3، ...}.'},
+  {q:'صنِّف المتتابعة:&nbsp; 4 ، 9 ، 14 ، 19 ، ...',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:0,ok:'✅ متتابعة حسابية! الفرق بين كل حدين متتاليين ثابت = 5.',no:'❌ هي متتابعة حسابية. الفرق الثابت: 9−4=14−9=19−14=5.'},
+  {q:'صنِّف المتتابعة:&nbsp; 3 ، 12 ، 48 ، ...',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:1,ok:'✅ متتابعة هندسية! النسبة بين كل حدين متتاليين ثابتة = 4.',no:'❌ هي متتابعة هندسية. النسبة الثابتة: 12÷3=48÷12=4.'},
+  {q:'صنِّف المتتابعة:&nbsp; 1 ، 4 ، 9 ، 16 ، ...',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:2,ok:'✅ غير ذلك! لا الفرق ثابت ولا النسبة ثابتة. هذه مربعات الأعداد.',no:'❌ هي غير ذلك. الفروق: 3، 5، 7 غير ثابتة. النسب: 4، 2.25 غير ثابتة.'}
+];
+let l1i=0;
+
+// ═══ المستوى 2 — 5 تصنيف سريع ═══
+const D2=[
+  {s:'2 ، 5 ، 10 ، 17 ، ...',t:'غ',inf:''},
+  {s:'100 ، 90 ، 80 ، 70 ، ...',t:'ح',inf:'الفرق الثابت = −10'},
+  {s:'81 ، 27 ، 9 ، 3 ، ...',t:'ه',inf:'النسبة الثابتة = ⅓'}
+];
+let l2i=0,l2done=false;
+
+// ═══ المستوى 3 — 5 تصنيف + تبرير ═══
+const D3=[
+  {seq:[6,10,14,18],t:'ح',jo:['الفرق بين الحدود ثابت','النسبة بين الحدود ثابتة','غير ذلك'],ja:0,ft:'✅ متتابعة حسابية!',fj:'✅ الفرق ثابت: 10−6=4، 14−10=4، 18−14=4. الأساس = 4.',base:'الأساس (الفرق الثابت) = 4'},
+  {seq:[2,6,18,54],t:'ه',jo:['الفرق بين الحدود ثابت','النسبة بين الحدود ثابتة','غير ذلك'],ja:1,ft:'✅ متتابعة هندسية!',fj:'✅ النسبة ثابتة: 6÷2=3، 18÷6=3، 54÷18=3. الأساس = 3.',base:'الأساس (النسبة الثابتة) = 3'},
+  {seq:[1,2,4,7,11],t:'غ',jo:['الفرق بين الحدود ثابت','النسبة بين الحدود ثابتة','غير ذلك'],ja:2,ft:'✅ غير ذلك! لا فرق ثابت ولا نسبة ثابتة.',fj:'✅ الفروق: 1،2،3،4 غير ثابتة. النسب أيضاً غير ثابتة.'},
+  {seq:[50,45,40,35],t:'ح',jo:['الفرق بين الحدود ثابت','النسبة بين الحدود ثابتة','غير ذلك'],ja:0,ft:'✅ متتابعة حسابية!',fj:'✅ الفرق ثابت: 45−50=−5، 40−45=−5، 35−40=−5. الأساس = −5.',base:'الأساس (الفرق الثابت) = −5'},
+];
+let l3i=0,l3ph=0;
+
+// ═══ المستوى 4 — 5 أسئلة (3 حد ناقص + 2 أساس) ═══
+// كل حد ناقص = 3 خطوات (نوع→أساس→قيمة) مع عداد خطوات ومؤقت لكل خطوة
+const D4=[
+  {kind:'hid',d:[2,'?',8,16],ans:4,to:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],ta:1,ao:['النسبة = 3','النسبة = 2','النسبة = 4','الفرق = 2'],aa:1,ft:'✅ متتابعة هندسية',fa:'✅ الأساس (النسبة الثابتة) = 2.',fn:'✅ الحد الناقص = 4. لأن 2×2=4.'},
+  {kind:'hid',d:[40,'?',28,22],ans:34,to:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],ta:0,ao:['الفرق = 6','الفرق = −6','الفرق = −8','الفرق = 8'],aa:1,ft:'✅ متتابعة حسابية',fa:'✅ الأساس (الفرق الثابت) = −6.',fn:'✅ الحد الناقص = 34. لأن 40+(−6)=34.'},
+  {kind:'base',seq:'20 ، 15 ، 10 ، 5 ، ...',q:'ما الأساس (الفرق الثابت) للمتتابعة: 20 ، 15 ، 10 ، 5 ، ...؟',opts:['5','−5','10','−10'],a:1,ok:'✅ الأساس = −5. لأن 15−20=10−15=5−10=−5.',no:'❌ الأساس = −5. الفرق الثابت = 15−20=−5.'},
+  {kind:'base',seq:'3 ، 6 ، 12 ، 24 ، ...',q:'ما الأساس (النسبة الثابتة) للمتتابعة: 3 ، 6 ، 12 ، 24 ، ...؟',opts:['3','4','2','6'],a:2,ok:'✅ الأساس = 2. لأن 6÷3=12÷6=24÷12=2.',no:'❌ الأساس = 2. النسبة الثابتة = 6÷3=2.'}
+];
+let l4i=0,l4ph=0;
+
+// ═══ المستوى 5 — 5 أسئلة ═══
+// [0-2] رسم بياني  [3] إيجاد حد معين  [4] سيد المتتابعات
+const D5=[
+  {kind:'graph',seqTxt:'2 ، 5 ، 8 ، 11 ، 14 ، ...',terms:[2,5,8,11,14],q:'ما نوع المتتابعة في الرسم البياني؟',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:0,ok:'✅ متتابعة حسابية! الفرق الثابت = 3.',no:'❌ هي متتابعة حسابية. الفرق الثابت = 3.'},
+  {kind:'graph',seqTxt:'1 ، 2 ، 4 ، 8 ، 16 ، ...',terms:[1,2,4,8,16],q:'ما نوع المتتابعة في الرسم البياني؟',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:1,ok:'✅ متتابعة هندسية! النسبة الثابتة = 2.',no:'❌ هي متتابعة هندسية. النسبة الثابتة = 2.'},
+  {kind:'graph',seqTxt:'1 ، 3 ، 7 ، 13 ، 21 ، ...',terms:[1,3,7,13,21],q:'ما نوع المتتابعة في الرسم البياني؟',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:2,ok:'✅ غير ذلك! الفروق: 2، 4، 6، 8 غير ثابتة.',no:'❌ هي غير ذلك. الفروق: 2، 4، 6، 8 غير ثابتة.'},
+  {kind:'master',seq:[3,9,27,81],steps:[
+    {q:'🏆 سيد المتتابعات — الخطوة 1\nصنِّف المتتابعة: 3 ، 9 ، 27 ، 81 ، ...',opts:['متتابعة حسابية','متتابعة هندسية','غير ذلك'],a:1,ok:'✅ متتابعة هندسية!',no:'❌ هي متتابعة هندسية. النسبة = 9÷3=3.'},
+    {q:'الخطوة 2: ما الأساس لهذه المتتابعة؟',opts:['الفرق بين الحدود ثابت ويساوي 3','النسبة بين الحدود ثابتة وتساوي 3','غير ذلك'],a:1,ok:'✅ النسبة الثابتة = 3. هذا هو الأساس.',no:'❌ الأساس: النسبة بين الحدود ثابتة وتساوي 3.'},
+    {q:'الخطوة 3: ما الحد الخامس للمتتابعة؟',opts:['243','162','324','81'],a:0,ok:'✅ الحد الخامس = 81×3 = 243.',no:'❌ الحد الخامس = 81×3 = 243.'}
+  ]}
+];
+let l5i=0,l5mSt=0,l5gVis=false;
+
+// ═══ HELPERS ═══
+function initDots(){const el=document.getElementById('lpDots');el.innerHTML=[1,2,3,4,5].map((n,i)=>`<div class="lpdot" id="ld${i}">${n}</div>`).join('');}
+function updH(){document.getElementById('hPts').textContent=G.pts;document.getElementById('hStr').textContent=G.str;document.getElementById('hCor').textContent=G.cor;document.getElementById('lpFill').style.width=(G.lv/5*100)+'%';for(let i=0;i<5;i++){const d=document.getElementById('ld'+i);d.className='lpdot'+(i<G.lv?' fin':i===G.lv?' act':'');}}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function goHome(){clrT();show('scrHome');document.getElementById('homeBtn').style.display='none';G={pts:0,cor:0,str:0,lv:0,tmr:null,t:0};updH();}
+function addP(p){G.pts+=p;updH();}
+function hit(b=100){G.cor++;G.str++;addP(b+(G.str>=3?40:0));}
+function miss(){G.str=0;updH();}
+function clrT(){if(G.tmr){clearInterval(G.tmr);G.tmr=null;}}
+function startT(secs,bi,li,cb){clrT();G.t=secs;const bar=document.getElementById(bi),lbl=document.getElementById(li);if(bar){bar.classList.remove('hot');bar.style.width='100%';}G.tmr=setInterval(()=>{G.t--;if(bar)bar.style.width=(G.t/secs*100)+'%';if(lbl)lbl.textContent='⏱ '+G.t;if(G.t<=5&&bar)bar.classList.add('hot');if(G.t<=0){clrT();cb();}},1000);}
+function seqH(arr){let h='<div class="seq-row">';arr.forEach((x,i)=>{h+=x==='?'?'<div class="tile blank">؟</div>':`<div class="tile">${x}</div>`;if(i<arr.length-1)h+='<div class="tsep">،</div>';});return h+'<div class="tdots">...</div></div>';}
+function lockO(pfx,cnt,ans,chsn){for(let i=0;i<cnt;i++){const b=document.getElementById(pfx+i);if(!b)continue;b.disabled=true;if(i===ans)b.classList.add('yes');if(i===chsn&&i!==ans)b.classList.add('no');}}
+function pips(cid,tot,cur){const el=document.getElementById(cid);if(!el)return;el.innerHTML=Array.from({length:tot},(_,i)=>`<div class="spdot ${i<cur?'fin':i===cur?'act':''}"></div>`).join('');}
+function drawG(cvId,terms){const c=document.getElementById(cvId);if(!c)return;const ctx=c.getContext('2d'),W=c.width,H=c.height,p=28;ctx.clearRect(0,0,W,H);const mx=Math.max(...terms)*1.14;const sx=(W-p*2)/terms.length,sy=(H-p*2)/mx;ctx.strokeStyle='rgba(255,255,255,.05)';for(let i=0;i<=4;i++){const y=H-p-i*(H-p*2)/4;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(W-p,y);ctx.stroke();}ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p,H-p);ctx.lineTo(W-p,H-p);ctx.stroke();ctx.beginPath();ctx.moveTo(p,p);ctx.lineTo(p,H-p);ctx.stroke();const pts=terms.map((v,i)=>({x:p+sx*(i+.5),y:H-p-v*sy}));ctx.strokeStyle='rgba(251,191,36,.18)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();pts.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.stroke();ctx.setLineDash([]);pts.forEach((pt,i)=>{ctx.beginPath();ctx.arc(pt.x,pt.y,6,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,.2)';ctx.fill();ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='bold 10px Cairo,sans-serif';ctx.textAlign='center';ctx.fillText(terms[i],pt.x,pt.y-12);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(i+1,pt.x,H-p+13);});}
+
+// ═══ GAME ═══
+function startGame(){G={pts:0,cor:0,str:0,lv:0,tmr:null,t:0};l1i=0;l2i=0;l2done=false;l3i=0;l3ph=0;l4i=0;l4ph=0;l5i=0;l5mSt=0;l5gVis=false;document.getElementById('homeBtn').style.display='';updH();goLv(1);}
+function goLv(n){clrT();G.lv=n-1;updH();if(n===1){show('scrL1');rndrL1();}else if(n===2){show('scrL2');initL2();}else if(n===3){show('scrL3');rndrL3();}else if(n===4){show('scrL4');rndrL4();}else if(n===5){G.lv=4;updH();show('scrL5');rndrL5();}else{G.lv=5;updH();showEnd();}}
+
+// ═══ L1 ═══
+function rndrL1(){pips('pL1',5,l1i);document.getElementById('nL1').style.display='none';if(l1i>=D1.length){document.getElementById('bL1').innerHTML='<div style="text-align:center;color:var(--neon);padding:18px">🎉 أنهيت المستوى الأول!</div>';document.getElementById('nL1').style.display='inline-flex';document.getElementById('nL1').onclick=()=>goLv(2);clrT();return;}const d=D1[l1i];const K=['أ','ب','ج','د'];let h=`<div class="qtxt">${d.q}</div><div class="opts">`;d.opts.forEach((o,i)=>h+=`<button class="opt" id="op${i}" onclick="l1P(${i})"><span class="okey">${K[i]}</span>${o}</button>`);h+=`</div><div class="fb" id="fb1"></div>`;document.getElementById('bL1').innerHTML=h;startT(20,'tB1','tL1',()=>{lockO('op',d.opts.length,d.a,-1);const f=document.getElementById('fb1');f.className='fb err on';f.innerHTML='⏰ انتهى الوقت! '+d.no;miss();document.getElementById('nL1').style.display='inline-flex';document.getElementById('nL1').onclick=l1Next;});}
+function l1P(idx){clrT();const d=D1[l1i];const ok=idx===d.a;lockO('op',d.opts.length,d.a,idx);const f=document.getElementById('fb1');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=ok?d.ok:d.no;ok?hit():miss();document.getElementById('nL1').style.display='inline-flex';document.getElementById('nL1').onclick=l1Next;}
+function l1Next(){l1i++;rndrL1();}
+
+// ═══ L2 ═══
+function initL2(){l2i=0;l2done=false;rndrL2();}
+function rndrL2(){if(l2i>=D2.length){endL2();return;}l2done=false;const d=D2[l2i];document.getElementById('rfSeq').textContent=d.s;document.getElementById('rfCnt').textContent=(l2i+1)+' / 5';document.getElementById('rfSt').textContent=G.str;document.getElementById('rfFb').className='fb';document.getElementById('nL2').style.display='none';document.querySelectorAll('.rfb').forEach(b=>{b.className=b.className.replace(' flash','').replace(' dim','');b.disabled=false;});startT(20,'tB2','tL2',()=>{if(!l2done){l2done=true;miss();const f=document.getElementById('rfFb');f.className='fb err on';const nm={ح:'متتابعة حسابية',ه:'متتابعة هندسية',غ:'غير ذلك'};f.innerHTML='⏰ انتهى الوقت! '+nm[d.t]+(d.inf?' — '+d.inf:'');setTimeout(()=>{l2i++;rndrL2();},1400);}});}
+function rfAns(t){if(l2done)return;l2done=true;clrT();const d=D2[l2i];const ok=t===d.t;const bm={ح:'.rfb-c',ه:'.rfb-h',غ:'.rfb-n'};document.querySelector(bm[t]).classList.add(ok?'flash':'dim');if(!ok)document.querySelector(bm[d.t]).classList.add('flash');ok?hit(80):miss();const nm={ح:'متتابعة حسابية',ه:'متتابعة هندسية',غ:'غير ذلك'};const f=document.getElementById('rfFb');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=(ok?'✅ ':'❌ ')+nm[d.t]+(d.inf?' — '+d.inf:'');document.getElementById('rfSt').textContent=G.str;setTimeout(()=>{l2i++;rndrL2();},1500);}
+function endL2(){clrT();document.getElementById('rfSeq').innerHTML='<span style="color:var(--neon)">🎉 أنهيت المستوى الثاني!</span>';document.querySelectorAll('.rfb').forEach(b=>b.disabled=true);document.getElementById('nL2').style.display='inline-flex';}
+
+// ═══ L3 ═══
+function rndrL3(){pips('pL3',5,l3i);document.getElementById('nL3').style.display='none';if(l3i>=D3.length){document.getElementById('bL3').innerHTML='<div style="text-align:center;color:var(--neon);padding:18px">🎉 أنهيت المستوى الثالث!</div>';document.getElementById('nL3').style.display='inline-flex';document.getElementById('nL3').onclick=()=>goLv(4);clrT();return;}const d=D3[l3i];const tm={ح:0,ه:1,غ:2};const tn=['متتابعة حسابية','متتابعة هندسية','غير ذلك'];let h=`<div class="qtxt">صنِّف المتتابعة:</div>${seqH(d.seq)}`;if(l3ph===0){h+=`<div class="qlbl">ما نوع المتتابعة؟</div><div class="opts g3">`;tn.forEach((o,i)=>h+=`<button class="opt" id="t3${i}" onclick="l3T('${['ح','ه','غ'][i]}')">${o}</button>`);h+=`</div>`;}else if(l3ph===1){h+=`<div class="fb ok on" style="margin-bottom:10px">${d.ft}</div>`;h+=`<div class="qlbl">ما السبب في تصنيفها؟</div><div class="opts">`;d.jo.forEach((o,i)=>h+=`<button class="opt" id="j3${i}" onclick="l3J(${i})">${o}</button>`);h+=`</div>`;}else{h+=`<div class="fb ok on">${d.fj}</div>`;if(d.base)h+=`<div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:10px 14px;color:var(--spark);font-weight:700;font-size:.84rem;margin-top:9px">📌 ${d.base}</div>`;clrT();document.getElementById('nL3').style.display='inline-flex';document.getElementById('nL3').onclick=l3Next;}document.getElementById('bL3').innerHTML=h;if(l3ph<2){startT(20,'tB3','tL3',()=>{if(l3ph===0){document.querySelectorAll('[id^="t3"]').forEach(b=>b.disabled=true);document.getElementById('t3'+tm[d.t]).classList.add('yes');miss();l3ph=1;setTimeout(rndrL3,800);}else if(l3ph===1){document.querySelectorAll('[id^="j3"]').forEach(b=>b.disabled=true);document.getElementById('j3'+d.ja).classList.add('yes');miss();l3ph=2;setTimeout(rndrL3,800);}});}}
+function l3T(t){clrT();const d=D3[l3i];const m={ح:0,ه:1,غ:2};document.querySelectorAll('[id^="t3"]').forEach(b=>b.disabled=true);const ok=t===d.t;document.getElementById('t3'+m[t]).classList.add(ok?'yes':'no');if(!ok)document.getElementById('t3'+m[d.t]).classList.add('yes');ok?hit():miss();l3ph=1;setTimeout(rndrL3,700);}
+function l3J(idx){clrT();const d=D3[l3i];const ok=idx===d.ja;document.querySelectorAll('[id^="j3"]').forEach(b=>b.disabled=true);document.getElementById('j3'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('j3'+d.ja).classList.add('yes');ok?hit():miss();l3ph=2;setTimeout(rndrL3,800);}
+function l3Next(){l3i++;l3ph=0;rndrL3();}
+
+// ═══ L4 ═══
+function rndrL4(){pips('pL4',5,l4i);document.getElementById('nL4').style.display='none';if(l4i>=D4.length){document.getElementById('bL4').innerHTML='<div style="text-align:center;color:var(--neon);padding:18px">🎉 أنهيت المستوى الرابع!</div>';document.getElementById('nL4').style.display='inline-flex';document.getElementById('nL4').onclick=()=>goLv(5);clrT();return;}const d=D4[l4i];const K=['أ','ب','ج','د'];let h='';if(d.kind==='hid'){h+=`<div class="qtxt">أوجد الحد الناقص وصنِّف المتتابعة:</div>${seqH(d.d)}`;if(l4ph===0){h+=`<div class="qlbl">الخطوة 1 — ما نوع المتتابعة؟</div><div class="opts g3">`;d.to.forEach((o,i)=>h+=`<button class="opt" id="ht${i}" onclick="l4HT(${i})">${o}</button>`);h+=`</div>`;}else if(l4ph===1){h+=`<div class="fb ok on" style="margin-bottom:10px">${d.ft}</div>`;h+=`<div class="qlbl">الخطوة 2 — ما الأساس؟</div><div class="opts g2">`;d.ao.forEach((o,i)=>h+=`<button class="opt" id="ha${i}" onclick="l4HA(${i})"><span class="okey">${K[i]}</span>${o}</button>`);h+=`</div>`;}else if(l4ph===2){h+=`<div class="fb ok on" style="margin-bottom:10px">${d.fa}</div>`;h+=`<div class="qlbl">الخطوة 3 — ما قيمة الحد الناقص (؟)؟</div>`;h+=`<div class="inrow"><input type="number" class="ninput" id="hidInp" placeholder="؟" onkeydown="if(event.key==='Enter')l4Sub()"><button class="btn btn-neon btn-sm" onclick="l4Sub()">تحقق ✓</button></div>`;h+=`<div class="fb" id="fbHid"></div>`;}else{h+=`<div class="fb ok on">${d.fn}</div>`;clrT();document.getElementById('nL4').style.display='inline-flex';document.getElementById('nL4').onclick=l4Next;}}else{h+=`<div class="qtxt">${d.q}</div><div class="opts g2">`;d.opts.forEach((o,i)=>h+=`<button class="opt" id="bp${i}" onclick="l4B(${i})"><span class="okey">${K[i]}</span>${o}</button>`);h+=`</div><div class="fb" id="fbBase"></div>`;}document.getElementById('bL4').innerHTML=h;if(d.kind==='hid'&&l4ph<3){startT(20,'tB4','tL4',()=>{if(l4ph===0){document.querySelectorAll('[id^="ht"]').forEach(b=>b.disabled=true);document.getElementById('ht'+d.ta).classList.add('yes');miss();l4ph=1;setTimeout(rndrL4,800);}else if(l4ph===1){document.querySelectorAll('[id^="ha"]').forEach(b=>b.disabled=true);document.getElementById('ha'+d.aa).classList.add('yes');miss();l4ph=2;setTimeout(rndrL4,800);}else if(l4ph===2){const f=document.getElementById('fbHid');if(f){f.className='fb err on';f.innerHTML='⏰ انتهى الوقت! '+d.fn;}miss();l4ph=3;setTimeout(rndrL4,900);}});}else if(d.kind==='base'){startT(20,'tB4','tL4',()=>{document.querySelectorAll('[id^="bp"]').forEach(b=>b.disabled=true);document.getElementById('bp'+d.a).classList.add('yes');const f=document.getElementById('fbBase');if(f){f.className='fb err on';f.innerHTML='⏰ انتهى الوقت! '+d.no;}miss();document.getElementById('nL4').style.display='inline-flex';document.getElementById('nL4').onclick=l4Next;});}}
+function l4HT(idx){clrT();const d=D4[l4i];const ok=idx===d.ta;document.querySelectorAll('[id^="ht"]').forEach(b=>b.disabled=true);document.getElementById('ht'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('ht'+d.ta).classList.add('yes');ok?hit():miss();l4ph=1;setTimeout(rndrL4,700);}
+function l4HA(idx){clrT();const d=D4[l4i];const ok=idx===d.aa;document.querySelectorAll('[id^="ha"]').forEach(b=>b.disabled=true);document.getElementById('ha'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('ha'+d.aa).classList.add('yes');ok?hit():miss();l4ph=2;setTimeout(rndrL4,700);}
+function l4Sub(){clrT();const d=D4[l4i];const v=parseFloat(document.getElementById('hidInp').value);if(isNaN(v))return;const ok=v===d.ans;ok?hit(120):miss();const f=document.getElementById('fbHid');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=ok?d.fn:`❌ الإجابة الصحيحة: ${d.ans}<br>${d.fn}`;document.getElementById('hidInp').disabled=true;document.querySelector('[onclick="l4Sub()"]').disabled=true;l4ph=3;setTimeout(rndrL4,900);}
+function l4B(idx){
+  clrT();
+  const d = D4[l4i];
+  const ok = idx === d.a;
+
+  document.querySelectorAll('[id^="bp"]').forEach(b => b.disabled = true);
+
+  document.getElementById('bp' + idx).classList.add(ok ? 'yes' : 'no');
+  if(!ok) document.getElementById('bp' + d.a).classList.add('yes');
+
+  ok ? hit() : miss();
+
+  const f = document.getElementById('fbBase');
+  f.className = 'fb ' + (ok ? 'ok' : 'err') + ' on';
+  f.innerHTML = ok ? d.ok : d.no;
+
+  document.getElementById('nL4').style.display = 'inline-flex';
+  document.getElementById('nL4').onclick = l4Next;
+};
+function l4Next(){l4i++;l4ph=0;rndrL4();}
+
+// ═══ L5 ═══
+function rndrL5(){pips('pL5',5,l5i);document.getElementById('nL5').style.display='none';if(l5i>=D5.length){document.getElementById('bL5').innerHTML='<div style="text-align:center;color:var(--spark);padding:18px">🎉 أنهيت جميع المستويات! أنت سيد المتتابعات 🏆</div>';document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=()=>goLv(6);clrT();return;}const d=D5[l5i];const K=['أ','ب','ج','د'];let h='';
+if(d.kind==='graph'){h+=`<div class="qtxt">${d.q}</div>`;h+=`<button class="peek-btn" id="pkBtn" onclick="tglPk()">${l5gVis?'🙈 إخفاء المتتابعة':'👁 عرض المتتابعة'}</button>`;h+=`<div id="pkBox" style="display:${l5gVis?'block':'none'}"><div style="background:rgba(18,28,62,.9);border-radius:10px;padding:9px 13px;font-family:Tajawal,monospace;font-size:1rem;color:var(--spark);text-align:center;margin-bottom:7px">${d.seqTxt}</div><div class="graphbox"><canvas id="gCvs" width="310" height="165"></canvas></div></div>`;h+=`<div class="opts">`;d.opts.forEach((o,i)=>h+=`<button class="opt" id="g5${i}" onclick="l5G(${i})">${o}</button>`);h+=`</div><div class="fb" id="fbG"></div>`;document.getElementById('bL5').innerHTML=h;if(l5gVis)setTimeout(()=>drawG('gCvs',d.terms),40);startT(20,'tB5','tL5',()=>{document.querySelectorAll('[id^="g5"]').forEach(b=>b.disabled=true);document.getElementById('g5'+d.a).classList.add('yes');const f=document.getElementById('fbG');if(f){f.className='fb err on';f.innerHTML='⏰ '+d.no;}miss();document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5Next;});
+}else if(d.kind==='term'){h+=seqH(d.seq);h+=`<div class="qtxt">${d.q.replace(/\n/g,'<br>')}</div><div class="opts g2">`;d.opts.forEach((o,i)=>h+=`<button class="opt" id="tm${i}" onclick="l5Tm(${i})"><span class="okey">${K[i]}</span>${o}</button>`);h+=`</div><div class="fb" id="fbTm"></div>`;document.getElementById('bL5').innerHTML=h;startT(20,'tB5','tL5',()=>{document.querySelectorAll('[id^="tm"]').forEach(b=>b.disabled=true);document.getElementById('tm'+d.a).classList.add('yes');const f=document.getElementById('fbTm');if(f){f.className='fb err on';f.innerHTML='⏰ '+d.no;}miss();document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5Next;});
+}else if(d.kind==='master'){const st=d.steps[l5mSt];h+=seqH(d.seq);h+=`<div class="qtxt">${st.q.replace(/\n/g,'<br>')}</div><div class="opts">`;st.opts.forEach((o,i)=>h+=`<button class="opt" id="ms${i}" onclick="l5Ms(${i})"><span class="okey">${K[i]||i+1}</span>${o}</button>`);h+=`</div><div class="fb" id="fbMs"></div>`;document.getElementById('bL5').innerHTML=h;startT(20,'tB5','tL5',()=>{document.querySelectorAll('[id^="ms"]').forEach(b=>b.disabled=true);document.getElementById('ms'+st.a).classList.add('yes');const f=document.getElementById('fbMs');if(f){f.className='fb err on';f.innerHTML='⏰ '+st.no;}miss();document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5MsNx;});}}
+function tglPk(){l5gVis=!l5gVis;const d=D5[l5i];const b=document.getElementById('pkBox');const btn=document.getElementById('pkBtn');if(b)b.style.display=l5gVis?'block':'none';if(btn)btn.textContent=l5gVis?'🙈 إخفاء المتتابعة':'👁 عرض المتتابعة';if(l5gVis)setTimeout(()=>drawG('gCvs',d.terms),40);}
+function l5G(idx){clrT();const d=D5[l5i];const ok=idx===d.a;document.querySelectorAll('[id^="g5"]').forEach(b=>b.disabled=true);document.getElementById('g5'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('g5'+d.a).classList.add('yes');ok?hit():miss();const f=document.getElementById('fbG');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=ok?d.ok:d.no;document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5Next;}
+function l5Tm(idx){clrT();const d=D5[l5i];const ok=idx===d.a;document.querySelectorAll('[id^="tm"]').forEach(b=>b.disabled=true);document.getElementById('tm'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('tm'+d.a).classList.add('yes');ok?hit(120):miss();const f=document.getElementById('fbTm');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=ok?d.ok:d.no;document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5Next;}
+function l5Ms(idx){clrT();const d=D5[l5i];const st=d.steps[l5mSt];const ok=idx===st.a;document.querySelectorAll('[id^="ms"]').forEach(b=>b.disabled=true);document.getElementById('ms'+idx).classList.add(ok?'yes':'no');if(!ok)document.getElementById('ms'+st.a).classList.add('yes');ok?hit(150):miss();const f=document.getElementById('fbMs');f.className='fb '+(ok?'ok':'err')+' on';f.innerHTML=ok?st.ok:st.no;document.getElementById('nL5').style.display='inline-flex';document.getElementById('nL5').onclick=l5MsNx;}
+function l5MsNx(){l5mSt++;if(l5mSt<D5[l5i].steps.length){rndrL5();}else{l5mSt=0;l5Next();}}
+function l5Next(){l5i++;l5gVis=false;rndrL5();}
+
+// ═══ END ═══
+function showEnd(){show('scrEnd');const pts=G.pts;document.getElementById('eScore').textContent=pts;const pct=pts/2500;let tr='🏆',ti='أنت سيد المتتابعات! 👑';if(pct<.4){tr='🌱';ti='جهد جيد! راجع المادة وحاول مجدداً';}else if(pct<.65){tr='🥈';ti='رائع! تقدم ملحوظ — استمر!';}else if(pct<.85){tr='🥇';ti='ممتاز! أداء متميز جداً!';}document.getElementById('eTrphy').textContent=tr;document.getElementById('eTitle').textContent=ti;
+const s=pct>=.85?3:pct>=.6?2:1;document.getElementById('eStars').innerHTML=[1,2,3].map(i=>`<span class="estr${i<=s?' glow':''}" style="animation-delay:${i*.2}s">${i<=s?'⭐':'☆'}</span>`).join('');
+}
+
+function startFrom(level){
+  G={pts:0,cor:0,str:0,lv:0,tmr:null,t:0};
+  updH();
+  document.getElementById('homeBtn').style.display='';
+  goLv(level);
+}
+
+initDots();updH();
+</script>
+</body>
+</html>
